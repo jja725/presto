@@ -71,6 +71,7 @@
         <dep.druid.version>0.19.0</dep.druid.version>
         <dep.jaxb.version>2.3.1</dep.jaxb.version>
         <dep.hudi.version>0.13.1</dep.hudi.version>
+        <dep.paimon.version>0.5.0-incubating</dep.paimon.version>
         <dep.testcontainers.version>1.18.3</dep.testcontainers.version>
         <dep.docker-java.version>3.3.0</dep.docker-java.version>
         <dep.jayway.version>2.6.0</dep.jayway.version>
@@ -191,6 +192,7 @@
         <module>redis-hbo-provider</module>
         <module>presto-singlestore</module>
         <module>presto-hana</module>
+        <module>presto-paimon</module>
     </modules>
 
     <dependencyManagement>
@@ -1333,6 +1335,24 @@
                 </exclusions>
             </dependency>
             <!-- End dependencies for querying Hudi table-->
+            <!-- Start dependencies for querying Paimon table-->
+             <dependency>
+            <groupId>org.apache.paimon</groupId>
+            <artifactId>paimon-bundle</artifactId>
+            <version>${dep.paimon.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+            <!-- End dependencies for querying Paimon table-->
 
             <dependency>
                 <groupId>net.sf.opencsv</groupId>
