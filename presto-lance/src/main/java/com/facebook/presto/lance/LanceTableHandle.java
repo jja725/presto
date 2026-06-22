@@ -18,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
+import java.util.OptionalLong;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static java.util.Objects.requireNonNull;
@@ -27,14 +28,23 @@ public class LanceTableHandle
 {
     private final String schemaName;
     private final String tableName;
+    // Limit pushed down from a LIMIT directly above the table scan; best-effort upper bound on rows scanned
+    private final OptionalLong limit;
+
+    public LanceTableHandle(String schemaName, String tableName)
+    {
+        this(schemaName, tableName, OptionalLong.empty());
+    }
 
     @JsonCreator
     public LanceTableHandle(
             @JsonProperty("schemaName") String schemaName,
-            @JsonProperty("tableName") String tableName)
+            @JsonProperty("tableName") String tableName,
+            @JsonProperty("limit") OptionalLong limit)
     {
         this.schemaName = requireNonNull(schemaName, "schemaName is null");
         this.tableName = requireNonNull(tableName, "tableName is null");
+        this.limit = requireNonNull(limit, "limit is null");
     }
 
     @JsonProperty
@@ -49,10 +59,26 @@ public class LanceTableHandle
         return tableName;
     }
 
+    @JsonProperty
+    public OptionalLong getLimit()
+    {
+        return limit;
+    }
+
+    public boolean hasLimit()
+    {
+        return limit.isPresent();
+    }
+
+    public LanceTableHandle withLimit(long limit)
+    {
+        return new LanceTableHandle(schemaName, tableName, OptionalLong.of(limit));
+    }
+
     @Override
     public int hashCode()
     {
-        return Objects.hash(schemaName, tableName);
+        return Objects.hash(schemaName, tableName, limit);
     }
 
     @Override
@@ -66,7 +92,8 @@ public class LanceTableHandle
         }
         LanceTableHandle other = (LanceTableHandle) obj;
         return Objects.equals(this.schemaName, other.schemaName) &&
-                Objects.equals(this.tableName, other.tableName);
+                Objects.equals(this.tableName, other.tableName) &&
+                Objects.equals(this.limit, other.limit);
     }
 
     @Override
@@ -75,6 +102,7 @@ public class LanceTableHandle
         return toStringHelper(this)
                 .add("schemaName", schemaName)
                 .add("tableName", tableName)
+                .add("limit", limit)
                 .toString();
     }
 }

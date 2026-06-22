@@ -23,6 +23,7 @@ import org.lance.ipc.LanceScanner;
 import org.lance.ipc.ScanOptions;
 
 import java.util.List;
+import java.util.OptionalLong;
 
 public class LanceFragmentPageSource
         extends LanceBasePageSource
@@ -38,7 +39,7 @@ public class LanceFragmentPageSource
             ArrowBlockBuilder arrowBlockBuilder,
             BufferAllocator parentAllocator)
     {
-        super(tableHandle, columns, new FragmentScannerFactory(fragments, tablePath, readBatchSize), arrowBlockBuilder, parentAllocator);
+        super(tableHandle, columns, new FragmentScannerFactory(fragments, tablePath, readBatchSize, tableHandle.getLimit()), arrowBlockBuilder, parentAllocator);
     }
 
     private static class FragmentScannerFactory
@@ -47,14 +48,16 @@ public class LanceFragmentPageSource
         private final List<Integer> fragmentIds;
         private final String tablePath;
         private final int readBatchSize;
+        private final OptionalLong limit;
         private Dataset dataset;
         private LanceScanner scanner;
 
-        FragmentScannerFactory(List<Integer> fragmentIds, String tablePath, int readBatchSize)
+        FragmentScannerFactory(List<Integer> fragmentIds, String tablePath, int readBatchSize, OptionalLong limit)
         {
             this.fragmentIds = ImmutableList.copyOf(fragmentIds);
             this.tablePath = tablePath;
             this.readBatchSize = readBatchSize;
+            this.limit = limit;
         }
 
         @Override
@@ -66,6 +69,8 @@ public class LanceFragmentPageSource
             }
             optionsBuilder.batchSize(readBatchSize);
             optionsBuilder.fragmentIds(fragmentIds);
+            // Stop each scan early when a LIMIT was pushed down (best-effort; the engine still enforces exact count)
+            limit.ifPresent(optionsBuilder::limit);
 
             this.dataset = Dataset.open(tablePath, new ReadOptions.Builder().build());
             this.scanner = dataset.newScan(optionsBuilder.build());
