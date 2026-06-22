@@ -19,6 +19,7 @@ import com.facebook.presto.spi.connector.Connector;
 import com.facebook.presto.spi.connector.ConnectorMetadata;
 import com.facebook.presto.spi.connector.ConnectorPageSinkProvider;
 import com.facebook.presto.spi.connector.ConnectorPageSourceProvider;
+import com.facebook.presto.spi.connector.ConnectorPlanOptimizerProvider;
 import com.facebook.presto.spi.connector.ConnectorSplitManager;
 import com.facebook.presto.spi.connector.ConnectorTransactionHandle;
 import com.facebook.presto.spi.transaction.IsolationLevel;
@@ -38,6 +39,7 @@ public class LanceConnector
     private final ConnectorSplitManager splitManager;
     private final ConnectorPageSourceProvider pageSourceProvider;
     private final ConnectorPageSinkProvider pageSinkProvider;
+    private final ConnectorPlanOptimizerProvider planOptimizerProvider;
 
     @Inject
     public LanceConnector(
@@ -46,7 +48,8 @@ public class LanceConnector
             LanceNamespaceHolder namespaceHolder,
             ConnectorSplitManager splitManager,
             ConnectorPageSourceProvider pageSourceProvider,
-            ConnectorPageSinkProvider pageSinkProvider)
+            ConnectorPageSinkProvider pageSinkProvider,
+            ConnectorPlanOptimizerProvider planOptimizerProvider)
     {
         this.lifeCycleManager = requireNonNull(lifeCycleManager, "lifeCycleManager is null");
         this.metadata = requireNonNull(metadata, "metadata is null");
@@ -54,6 +57,7 @@ public class LanceConnector
         this.splitManager = requireNonNull(splitManager, "splitManager is null");
         this.pageSourceProvider = requireNonNull(pageSourceProvider, "pageSourceProvider is null");
         this.pageSinkProvider = requireNonNull(pageSinkProvider, "pageSinkProvider is null");
+        this.planOptimizerProvider = requireNonNull(planOptimizerProvider, "planOptimizerProvider is null");
     }
 
     @Override
@@ -84,6 +88,12 @@ public class LanceConnector
     public ConnectorPageSinkProvider getPageSinkProvider()
     {
         return pageSinkProvider;
+    }
+
+    @Override
+    public ConnectorPlanOptimizerProvider getConnectorPlanOptimizerProvider()
+    {
+        return planOptimizerProvider;
     }
 
     @Override
